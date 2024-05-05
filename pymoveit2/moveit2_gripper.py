@@ -169,6 +169,25 @@ class MoveIt2Gripper(MoveIt2):
                 joint_positions=self.__closed_gripper_joint_positions
             )
 
+    def move_to_position(self, position: float | List[float], max_effort: float = 0.0):
+        """
+        Move the gripper to a specific position.
+        - `position` - Desired position of the gripper (0.0 - open, 1.0 - closed)
+        - `max_effort` - Maximum effort that can be used to reach the desired position
+        """
+        if isinstance(position, float):
+            position = [
+                self.__open_gripper_joint_positions[i]
+                + position
+                * (
+                    self.__closed_gripper_joint_positions[i]
+                    - self.__open_gripper_joint_positions[i]
+                )
+                for i in range(len(self.joint_names))
+            ]
+
+        self.move_to_configuration(joint_positions=position)
+
     def reset_open(self, sync: bool = True):
         """
         Reset into open configuration by sending a dummy joint trajectory.

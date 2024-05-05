@@ -138,7 +138,7 @@ class GripperInterface(MoveIt2Gripper, GripperCommand):
 
         self._interface.close(self=self, skip_if_noop=skip_if_noop)
 
-    def move_to_position(self, position: float | List[float], max_effort: float = 0):
+    def move_to_position(self, position: float | List[float], max_effort: float = 0.0):
         if self._interface is None:
             self.__determine_interface()
         if self._interface is None:
