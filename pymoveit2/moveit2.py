@@ -1697,8 +1697,17 @@ class MoveIt2:
             if not joint_name in msg.name:
                 return
 
+        joint_state = JointState()
+        joint_state.header = msg.header
+        for i, name in enumerate(msg.name):
+            if name in self.joint_names:
+                joint_state.name.append(name)
+                joint_state.position.append(msg.position[i])
+                joint_state.velocity.append(msg.velocity[i])
+                joint_state.effort.append(msg.effort[i])
+
         self.__joint_state_mutex.acquire()
-        self.__joint_state = msg
+        self.__joint_state = joint_state
         self.__new_joint_state_available = True
         self.__joint_state_mutex.release()
 
@@ -1725,7 +1734,6 @@ class MoveIt2:
                 f"Service '{self._plan_kinematic_path_service.srv_name}' is not yet available. Better luck next time!"
             )
             return None
-
         return self._plan_kinematic_path_service.call_async(
             self.__kinematic_path_request
         )
@@ -1938,10 +1946,13 @@ class MoveIt2:
         move_action_goal.request.group_name = group_name
         move_action_goal.request.num_planning_attempts = 5
         move_action_goal.request.allowed_planning_time = 0.5
-        move_action_goal.request.max_velocity_scaling_factor = 0.0
-        move_action_goal.request.max_acceleration_scaling_factor = 0.0
-        move_action_goal.request.cartesian_speed_end_effector_link = end_effector
-        move_action_goal.request.max_cartesian_speed = 0.0
+        move_action_goal.request.max_velocity_scaling_factor = 1.0
+        move_action_goal.request.max_acceleration_scaling_factor = 1.0
+        if hasattr(move_action_goal.request, "cartesian_speed_end_effector_link"):
+            move_action_goal.request.cartesian_speed_end_effector_link = end_effector
+        else:
+            move_action_goal.request.cartesian_speed_limited_link = end_effector
+        move_action_goal.request.max_cartesian_speed = 1.0
 
         # move_action_goal.planning_options.planning_scene_diff = "Ignored"
         move_action_goal.planning_options.plan_only = False
