@@ -180,6 +180,24 @@ class GripperCommand:
 
         self.__send_goal_async_gripper_command(self.__close_gripper_command_goal)
 
+    def move_to_position(
+        self, position: Union[float, List[float]], max_effort: float = 0.0
+    ):
+        """
+        Move the gripper to a specific position.
+        - `position` - Target position of the gripper
+        - `max_effort` - Max effort applied when closing
+        """
+
+        if self.__ignore_new_calls_while_executing and self.__is_executing:
+            return
+        self.__is_motion_requested = True
+
+        gripper_cmd_goal = GripperCommandAction.Goal()
+        gripper_cmd_goal.command.position = position
+        gripper_cmd_goal.command.max_effort = max_effort
+        self.__send_goal_async_gripper_command(gripper_cmd_goal)
+
     def reset_open(self, **kwargs):
         """
         Reset into open configuration by sending a dummy joint trajectory.
